@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카카오 알림톡 메시지 목록</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .message-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .message-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .message-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .message-header {
+            background: #ffeb3b;
+            padding: 12px 16px;
+            position: relative;
+        }
+
+        .message-header::after {
+            content: 'kakao';
+            position: absolute;
+            top: 50%;
+            right: 16px;
+            transform: translateY(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .message-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .message-number {
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            background: #333;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .message-content {
+            padding: 20px;
+        }
+
+        .message-type {
+            background: #f5f5f5;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .message-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 15px;
+            min-height: 120px;
+        }
+
+        .message-text .highlight {
+            background: #fff9c4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .message-text .emoji {
+            font-size: 14px;
+        }
+
+        .message-info {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .message-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .button {
+            background: #ffeb3b;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .button:hover {
+            background: #fdd835;
+        }
+
+        .button.primary {
+            background: #1976d2;
+            color: white;
+        }
+
+        .button.primary:hover {
+            background: #1565c0;
+        }
+
+        .message-meta {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-top: 1px solid #eee;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .template-code {
+            font-family: 'Courier New', monospace;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #1976d2;
+        }
+
+        /* 특별한 스타일링 */
+        .message-card.urgent {
+            border-left: 4px solid #f44336;
+        }
+
+        .message-card.benefit {
+            border-left: 4px solid #4caf50;
+        }
+
+        .message-card.guide {
+            border-left: 4px solid #2196f3;
+        }
+
+        .message-card.personal {
+            border-left: 4px solid #ff9800;
+        }
+
+        .message-card.emergency {
+            border-left: 4px solid #9c27b0;
+        }
+
+        @media (max-width: 768px) {
+            .message-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>네이버모두 서비스 종료 대응 알림톡 메시지</h1>
+            <p>카카오 알림톡을 통한 홈페이지 자동 생성 서비스 유도 전략</p>
+        </div>
+
+        <div class="message-grid">
+            <!-- 메시지 1: 긴급 공지형 -->
+            <div class="message-card urgent">
+                <div class="message-number">1</div>
+                <div class="message-header">
+                    <div class="message-title">긴급 공지형</div>
+                </div>
+                <div class="message-content">
+                    <div class="message-type">기본형</div>
+                    <div class="message-text">
+                        <span class="emoji">🚨</span> <strong>[중요공지] 네이버모두 서비스 종료 안내</strong><br><br>
+                        안녕하세요, <span class="highlight">#{회사명}</span> 고객님.<br><br>
+                        네이버모두가 2025년 6월 26일부로 서비스를 완전 종료합니다.<br><br>
+                        <span class="emoji">⏰</span> 종료까지 남은 기간: <strong>D-161일</strong><br><br>
+                        현재 운영 중인 홈페이지가 사라지기 전에 미리 준비하세요!<br><br>
+                        <span class="emoji">✅</span> 3분 만에 새 홈페이지 완성<br>
+                        <span class="emoji">✅</span> 기존 디자인 그대로 보존<br>
+                        <span class="emoji">✅</span> 이전 비용 완전 무료<br>
+                        <span class="emoji">✅</span> 부동산 특화 기능 추가
+                    </div>
+                    <div class="message-info">
+                        템플릿 코드: <span class="template-code">NAVER_MODOO_URGENT_01</span><br>
+                        발송 대상: 네이버모두 현재 이용자 (A그룹)<br>
+                        목적: 서비스 종료 인지도 향상
+                    </div>
+                    <div class="message-buttons">
+                        <button class="button primary">무료 홈페이지 만들기</button>
+                        <button class="button">서비스 종료 상세 안내</button>
+                    </div>
+                </div>
+                <div class="message-meta">
+                    발송 시점: 즉시 | 예상 전환율: 15-20%
+                </div>
+            </div>
+
+            <!-- 메시지 2: 혜택 강조형 -->
+            <div class="message-card benefit">
+                <div class="message-number">2</div>
+                <div class="message-header">
+                    <div class="message-title">혜택 강조형</div>
+                </div>
+                <div class="message-content">
+                    <div class="message-type">부가정보형</div>
+                    <div class="message-text">
+                        <span class="emoji">🎁</span> <strong>네이버모두 이용자 특별 혜택!</strong><br><br>
+                        <span class="highlight">#{고객명}</span>님, 안녕하세요.<br><br>
+                        네이버모두 서비스 종료로 걱정이 많으시죠?<br>
+                        베이하우스에서 더 좋은 해결책을 준비했습니다!<br><br>
+                        <span class="emoji">🚀</span> <strong>특별 혜택</strong> (12월 31일까지)<br>
+                        • 홈페이지 이전 비용 0원<br>
+                        • 1년간 무료 사용<br>
+                        • 부동산 전용 기능 무료 제공<br>
+                        • 사업자 인증으로 신뢰도 UP
+                    </div>
+                    <div class="message-info">
+                        템플릿 코드: <span class="template-code">NAVER_MODOO_BENEFIT_02</span><br>
+                        발송 대상: 홈페이지 필요한 신규 고객 (B그룹)<br>
+                        목적: 혜택 강조로 관심 유도
+                    </div>
+                    <div class="message-buttons">
+                        <button class="button primary">지금 바로 시작하기</button>
+                        <button class="button">성공 사례 보기</button>
+                    </div>
+                </div>
+                <div class="message-meta">
+                    발송 시점: 1주 후 | 예상 전환율: 20-25%
+                </div>
+            </div>
+
+            <!-- 메시지 3: 단계별 안내형 -->
+            <div class="message-card guide">
+                <div class="message-number">3</div>
+                <div class="message-header">
+                    <div class="message-title">단계별 안내형</div>
+                </div>
+                <div class="message-content">
+                    <div class="message-type">복합형 (부가정보 + 채널추가)</div>
+                    <div class="message-text">
+                        <span class="emoji">📢</span> <strong>네이버모두 → 베이하우스 이전 가이드</strong><br><br>
+                        <span class="highlight">#{회사명}</span> 담당자님께,<br><br>
+                        <span class="emoji">📋</span> <strong>간단한 3단계로 완료</strong><br><br>
+                        1️⃣ 지점 정보 선택<br>
+                        2️⃣ 사업자등록번호 인증<br>
+                        3️⃣ 홈페이지 자동 생성<br><br>
+                        <span class="emoji">⏱️</span> 소요시간: 단 3분<br>
+                        <span class="emoji">💰</span> 이전비용: 완전 무료<br>
+                        <span class="emoji">🔒</span> 보안인증: 사업자 정보 기반
+                    </div>
+                    <div class="message-info">
+                        템플릿 코드: <span class="template-code">NAVER_MODOO_GUIDE_03</span><br>
+                        발송 대상: B그룹 (신규 고객)<br>
+                        목적: 상세 프로세스 안내
+                    </div>
+                    <div class="message-buttons">
+                        <button class="button primary">3분 만에 홈페이지 만들기</button>
+                        <button class="button">베이하우스 채널 추가</button>
+                        <button class="button">전화 상담 신청</button>
+                    </div>
+                </div>
+                <div class="message-meta">
+                    발송 시점: 2주 후 | 예상 전환율: 18-22%
+                </div>
+            </div>
+
+            <!-- 메시지 4: 개인화 맞춤형 -->
+            <div class="message-card personal">
+                <div class="message-number">4</div>
+                <div class="message-header">
+                    <div class="message-title">개인화 맞춤형</div>
+                </div>
+                <div class="message-content">
+                    <div class="message-type">기본형</div>
+                    <div class="message-text">
+                        안녕하세요, <span class="highlight">#{고객명}</span>님!<br><br>
+                        <span class="highlight">#{지점명}</span>의 현재 홈페이지가 곧 사라집니다.<br><br>
+                        네이버모두 서비스 종료 (2025.06.26)까지<br>
+                        <span class="emoji">⏰</span> D-161일 남았습니다.<br><br>
+                        베이하우스에서 <span class="highlight">#{지점명}</span>만의<br>
+                        새로운 홈페이지를 무료로 만들어드려요!<br><br>
+                        <span class="emoji">✨</span> <strong>#{지점명} 전용 혜택</strong><br>
+                        • <span class="highlight">#{지점명}</span>.gohome.website 전용 URL<br>
+                        • <span class="highlight">#{지점명}</span> 매물 정보 자동 연동
+                    </div>
+                    <div class="message-info">
+                        템플릿 코드: <span class="template-code">NAVER_MODOO_PERSONAL_04</span><br>
+                        발송 대상: A그룹 (미전환 고객)<br>
+                        목적: 개인화로 친밀감 조성
+                    </div>
+                    <div class="message-buttons">
+                        <button class="button primary">#{지점명} 홈페이지 만들기</button>
+                        <button class="button">미리보기 확인</button>
+                    </div>
+                </div>
+                <div class="message-meta">
+                    발송 시점: 3일 후 | 예상 전환율: 25-30%
+                </div>
+            </div>
+
+            <!-- 메시지 5: 긴급성 강화형 -->
+            <div class="message-card emergency">
+                <div class="message-number">5</div>
+                <div class="message-header">
+                    <div class="message-title">긴급성 강화형</div>
+                </div>
+                <div class="message-content">
+                    <div class="message-type">강조표기형</div>
+                    <div class="message-text">
+                        <div style="background: #ffebee; padding: 8px; border-radius: 4px; margin-bottom: 10px; text-align: center;">
+                            <strong>⚠️ 네이버모두 서비스 D-161일 남음!</strong>
+                        </div>
+                        <span class="highlight">#{고객명}</span>님의 홈페이지가 위험합니다!<br><br>
+                        현재 <span class="highlight">#{현재홈페이지URL}</span>로 운영 중인<br>
+                        홈페이지가 161일 후 영구 삭제됩니다.<br><br>
+                        <span class="emoji">🚨</span> <strong>위험 요소들</strong><br>
+                        • 홈페이지 완전 사라짐<br>
+                        • 고객 유입 경로 차단<br>
+                        • 매출 감소 위험<br><br>
+                        <span class="emoji">⚡</span> 지금 이전하면:<br>
+                        • 1년 무료 사용<br>
+                        • 전용 도메인 제공
+                    </div>
+                    <div class="message-info">
+                        템플릿 코드: <span class="template-code">NAVER_MODOO_URGENT_05</span><br>
+                        발송 대상: 미전환 고객 (전체)<br>
+                        목적: 위기감으로 즉시 행동 유도
+                    </div>
+                    <div class="message-buttons">
+                        <button class="button primary">긴급 이전 시작</button>
+                        <button class="button">위험도 자가진단</button>
+                    </div>
+                </div>
+                <div class="message-meta">
+                    발송 시점: 1개월 후 | 예상 전환율: 30-35%
+                </div>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-top: 20px;">
+            <h3 style="margin-bottom: 15px; color: #333;">📊 전체 발송 전략 요약</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 13px;">
+                <div>
+                    <strong>총 메시지 수:</strong> 5개<br>
+                    <strong>타겟 그룹:</strong> A, B, C그룹<br>
+                    <strong>발송 기간:</strong> 1개월
+                </div>
+                <div>
+                    <strong>예상 도달률:</strong> 95%<br>
+                    <strong>예상 오픈률:</strong> 85%<br>
+                    <strong>예상 클릭률:</strong> 25%
+                </div>
+                <div>
+                    <strong>최종 전환율:</strong> 20-30%<br>
+                    <strong>목표 생성 수:</strong> 10,000개<br>
+                    <strong>예상 매출:</strong> 5억원
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
