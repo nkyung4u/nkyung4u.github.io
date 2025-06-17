@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지점 홈페이지 생성</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        /* 필드 그룹 */
+        .field-group {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #fafbfc;
+        }
+
+        .field-group.business-section {
+            background: #fafbfc;
+            border-color: #e9ecef;
+        }
+
+        .field-group.homepage-section {
+            background: #fafbfc;
+            border-color: #e9ecef;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .business-section .section-title {
+            color: #333;
+        }
+
+        .homepage-section .section-title {
+            color: #333;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            border-radius: 2px;
+            background: #007bff;
+        }
+
+        /* 입력 필드 스타일 */
+        .input-with-button {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+            margin-bottom: 10px;
+        }
+
+        .business-input, .homepage-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        .business-input:focus, .homepage-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .business-input.verified {
+            border-color: #28a745;
+            background-color: #f8fff8;
+        }
+
+        .business-input.error {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+        }
+
+        .homepage-input:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .verify-button {
+            padding: 12px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 100px;
+        }
+
+        .verify-button:hover {
+            background: #5a6268;
+        }
+
+        .verify-button:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .verify-button.verified {
+            background: #28a745;
+        }
+
+        .verify-button.verified:hover {
+            background: #218838;
+        }
+
+        .input-guide {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        /* 상태 메시지 */
+        .status-message {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        /* 사업자 정보 */
+        .business-info {
+            background: #e8f5e8;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .business-info.show {
+            display: block;
+        }
+
+        .business-info h4 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .business-info p {
+            color: #155724;
+            font-size: 13px;
+            margin: 3px 0;
+        }
+
+        /* 홈페이지 생성 섹션 */
+        .homepage-preview {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #6c757d;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .homepage-preview.generated {
+            background: white;
+            border-color: #28a745;
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .generate-button {
+            width: 100%;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .generate-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+        }
+
+        .generate-button:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 완료 결과 */
+        .completion-section {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #e8f5e8;
+            border: 2px solid #28a745;
+            border-radius: 12px;
+        }
+
+        .completion-section.show {
+            display: block;
+        }
+
+        .completion-title {
+            color: #155724;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .completion-url {
+            background: white;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .completion-features {
+            background: #fff9e6;
+            border: 1px solid #ffec99;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .completion-features h4 {
+            color: #996600;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            font-size: 13px;
+            color: #996600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .action-button.primary {
+            background: #007bff;
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .action-button.primary:hover {
+            background: #0056b3;
+        }
+
+        .action-button.secondary {
+            background: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+
+        .action-button.secondary:hover {
+            background: #f0f8ff;
+        }
+
+        /* 기존 홈페이지 입력 옵션 */
+        .manual-input-option {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .manual-button {
+            background: white;
+            color: #6c757d;
+            border: 1px solid #ddd;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .manual-button:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            color: #007bff;
+            font-size: 13px;
+            margin: 15px 0;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e9ecef;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .field-group {
+                padding: 20px;
+            }
+            
+            .input-with-button {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-button.primary {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">지점 홈페이지</h1>
+
+        <!-- 사업자등록번호 섹션 -->
+        <div class="field-group business-section">
+            <h2 class="section-title">사업자등록번호</h2>
+            
+            <label class="field-label">사업자등록번호 <span class="required">*</span></label>
+            <div class="input-with-button">
+                <input type="text" 
+                       class="business-input" 
+                       id="businessNumber"
+                       placeholder="000-00-00000"
+                       maxlength="12"
+                       oninput="formatBusinessNumber(this)">
+                <button class="verify-button" id="verifyButton" onclick="verifyBusinessNumber()">
+                    인증하기
+                </button>
+            </div>
+            <div class="input-guide">하이픈(-) 없이 10자리 숫자를 입력하세요</div>
+            
+            <div class="status-message" id="verifyStatus"></div>
+            
+            <div class="business-info" id="businessInfo">
+                <h4>✅ 사업자 정보가 확인되었습니다</h4>
+                <p id="companyName"></p>
+                <p id="businessType"></p>
+                <p id="businessStatus"></p>
+            </div>
+        </div>
+
+        <!-- 홈페이지 생성 섹션 -->
+        <div class="field-group homepage-section">
+            <h2 class="section-title">🏠 홈페이지 자동 생성</h2>
+            
+            <div class="loading" id="loadingState">
+                <div class="spinner"></div>
+                <span id="loadingText">사업자 정보를 확인하고 있습니다...</span>
+            </div>
+
+            <label class="field-label">사업자 인증 후 클릭 한 번으로 지점 전용 홈페이지가 자동으로 생성됩니다.</label>
+            
+            <div class="homepage-preview" id="homepagePreview">
+                사업자 인증 후 홈페이지 URL이 자동으로 생성됩니다
+            </div>
+
+            <button class="generate-button" id="generateButton" onclick="generateHomepage()" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                홈페이지 자동 생성
+            </button>
+
+            <div class="completion-features">
+                <h4>📋 자동 생성 홈페이지 포함 내용</h4>
+                <ul class="feature-list">
+                    <li>사업자 정보 기반 지점 정보 자동 설정</li>
+                    <li>매물 정보 자동 연동</li>
+                    <li>모바일 최적화 반응형 디자인</li>
+                    <li>SEO 최적화 및 검색 노출</li>
+                    <li>사업자등록번호 기반 신뢰도 인증</li>
+                </ul>
+            </div>
+
+            <div class="manual-input-option">
+                <button class="manual-button" onclick="toggleManualInput()">
+                    기존 홈페이지 URL 직접 입력하기
+                </button>
+            </div>
+        </div>
+
+        <!-- 완료 결과 섹션 -->
+        <div class="completion-section" id="completionSection">
+            <div class="completion-title">
+                🎉 홈페이지가 성공적으로 생성되었습니다!
+            </div>
+            <div class="completion-url" id="completionUrl"></div>
+            <div class="action-buttons">
+                <a href="#" class="action-button primary" id="viewSiteButton" target="_blank">
+                    🌐 홈페이지 바로 보기
+                </a>
+                <button class="action-button secondary" onclick="copyUrl()">
+                    📋 URL 복사
+                </button>
+                <button class="action-button secondary" onclick="downloadQR()">
+                    📱 QR 코드 다운로드
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isBusinessVerified = false;
+        let isManualMode = false;
+        let generatedUrl = null;
+
+        // 사업자등록번호 포맷팅
+        function formatBusinessNumber(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            if (value.length > 3 && value.length <= 5) {
+                value = value.substring(0, 3) + '-' + value.substring(3);
+            } else if (value.length > 5) {
+                value = value.substring(0, 3) + '-' + value.substring(3, 5) + '-' + value.substring(5, 10);
+            }
+            input.value = value;
+        }
+
+        // 상태 메시지 표시
+        function showStatusMessage(type, message) {
+            const statusMessage = document.getElementById('verifyStatus');
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.textContent = message;
+        }
+
+        // 사업자 정보 표시
+        function showBusinessInfo(data) {
+            const businessInfo = document.getElementById('businessInfo');
+            document.getElementById('companyName').textContent = `상호명: ${data.companyName}`;
+            document.getElementById('businessType').textContent = `업종: ${data.businessType}`;
+            document.getElementById('businessStatus').textContent = `상태: ${data.businessStatus}`;
+            businessInfo.classList.add('show');
+        }
+
+        // 사업자등록번호 인증
+        function verifyBusinessNumber() {
+            const businessNumber = document.getElementById('businessNumber').value.replace(/[^0-9]/g, '');
+            const verifyButton = document.getElementById('verifyButton');
+            const businessInput = document.getElementById('businessNumber');
+            const loading = document.getElementById('loadingState');
+            const loadingText = document.getElementById('loadingText');
+            const homepagePreview = document.getElementById('homepagePreview');
+
+            // 이미 인증된 경우
+            if (verifyButton.classList.contains('verified')) {
+                isBusinessVerified = true;
+                document.getElementById('generateButton').disabled = false;
+                showStatusMessage('success', '인증이 완료되었습니다. 홈페이지를 생성하세요.');
+                return;
+            }
+
+            // 입력 검증
+            if (businessNumber.length !== 10) {
+                showStatusMessage('error', '사업자등록번호 10자리를 정확히 입력해주세요.');
+                return;
+            }
+
+            // 로딩 시작
+            verifyButton.disabled = true;
+            verifyButton.textContent = '인증 중...';
+            loading.classList.add('show');
+            loadingText.textContent = '사업자 정보를 확인하고 있습니다...';
+
+            // API 호출 시뮬레이션
+            setTimeout(() => {
+                const isValid = businessNumber !== '0000000000';
+
+                if (isValid) {
+                    // 성공 케이스
+                    const businessData = {
+                        companyName: '(주)베이하우스',
+                        businessType: '부동산업',
+                        businessStatus: '계속사업자'
+                    };
+
+                    businessInput.classList.add('verified');
+                    businessInput.classList.remove('error');
+                    verifyButton.classList.add('verified');
+                    verifyButton.textContent = '인증완료';
+                    verifyButton.disabled = false;
+                    
+                    showStatusMessage('success', '사업자등록번호가 정상적으로 인증되었습니다.');
+                    showBusinessInfo(businessData);
+                    
+                    // 홈페이지 URL 미리보기 업데이트
+                    const previewUrl = `https://bay${businessNumber}.gohome.website/`;
+                    homepagePreview.textContent = previewUrl;
+                    homepagePreview.classList.add('generated');
+                    
+                    isBusinessVerified = true;
+                    document.getElementById('generateButton').disabled = false;
+                    
+                } else {
+                    // 실패 케이스
+                    businessInput.classList.add('error');
+                    businessInput.classList.remove('verified');
+                    verifyButton.classList.remove('verified');
+                    verifyButton.textContent = '인증하기';
+                    verifyButton.disabled = false;
+                    
+                    showStatusMessage('error', '유효하지 않은 사업자등록번호입니다. 다시 확인해주세요.');
+                    document.getElementById('businessInfo').classList.remove('show');
+                    
+                    // 홈페이지 URL 미리보기 초기화
+                    homepagePreview.textContent = '사업자 인증 후 홈페이지 URL이 자동으로 생성됩니다';
+                    homepagePreview.classList.remove('generated');
+                    
+                    isBusinessVerified = false;
+                    document.getElementById('generateButton').disabled = true;
+                }
+
+                loading.classList.remove('show');
+            }, 2000);
+        }
+
+        // 홈페이지 생성
+        function generateHomepage() {
+            if (!isBusinessVerified) {
+                alert('사업자등록번호 인증을 먼저 완료해주세요.');
+                return;
+            }
+
+            const generateButton = document.getElementById('generateButton');
+            const loading = document.getElementById('loadingState');
+            const loadingText = document.getElementById('loadingText');
+
+            // 로딩 상태 시작
+            generateButton.style.display = 'none';
+            loading.classList.add('show');
+            loadingText.textContent = '홈페이지를 생성하고 있습니다...';
+
+            // 홈페이지 생성 시뮬레이션
+            setTimeout(() => {
+                const businessNumber = document.getElementById('businessNumber').value.replace(/[^0-9]/g, '');
+                generatedUrl = `https://bay${businessNumber}.gohome.website/`;
+                
+                // 결과 표시
+                document.getElementById('completionUrl').textContent = generatedUrl;
+                document.getElementById('viewSiteButton').href = generatedUrl;
+                document.getElementById('completionSection').classList.add('show');
+                
+                loading.classList.remove('show');
+                showStatusMessage('success', '홈페이지가 성공적으로 생성되었습니다!');
+                
+            }, 3000);
+        }
+
+        // 수동 입력 모드 토글
+        function toggleManualInput() {
+            const homepagePreview = document.getElementById('homepagePreview');
+            const generateButton = document.getElementById('generateButton');
+            const manualButton = document.querySelector('.manual-button');
+
+            isManualMode = !isManualMode;
+
+            if (isManualMode) {
+                // 수동 입력 모드로 변경
+                homepagePreview.innerHTML = '<input type="url" class="homepage-input" placeholder="https://example.com" style="width:100%; border:none; background:transparent; outline:none;">';
+                generateButton.style.display = 'none';
+                manualButton.textContent = '자동 생성 모드로 변경';
+            } else {
+                // 자동 생성 모드로 변경
+                if (isBusinessVerified) {
+                    const businessNumber = document.getElementById('businessNumber').value.replace(/[^0-9]/g, '');
+                    const previewUrl = `https://bay${businessNumber}.gohome.website/`;
+                    homepagePreview.textContent = previewUrl;
+                    homepagePreview.classList.add('generated');
+                    generateButton.disabled = false;
+                } else {
+                    homepagePreview.textContent = '사업자 인증 후 홈페이지 URL이 자동으로 생성됩니다';
+                    homepagePreview.classList.remove('generated');
+                    generateButton.disabled = true;
+                }
+                generateButton.style.display = 'flex';
+                manualButton.textContent = '기존 홈페이지 URL 직접 입력하기';
+            }
+        }
+
+        // URL 복사
+        function copyUrl() {
+            if (generatedUrl) {
+                navigator.clipboard.writeText(generatedUrl).then(() => {
+                    alert('URL이 클립보드에 복사되었습니다!');
+                }).catch(() => {
+                    alert('URL을 수동으로 복사해주세요:\n' + generatedUrl);
+                });
+            }
+        }
+
+        // QR 코드 다운로드
+        function downloadQR() {
+            if (generatedUrl) {
+                alert(`QR 코드를 생성하여 다운로드합니다.\nURL: ${generatedUrl}`);
+            }
+        }
+    </script>
+</body>
+</html>
