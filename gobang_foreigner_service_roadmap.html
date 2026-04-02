@@ -1,0 +1,211 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,'Anthropic Sans',sans-serif)}
+.rm{padding:1rem 0}
+.phases{display:flex;gap:4px;margin-bottom:1.5rem}
+.phase-tab{flex:1;padding:10px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;text-align:center;background:var(--color-background-primary);transition:all .2s}
+.phase-tab:hover{background:var(--color-background-secondary)}
+.phase-tab.active-0{background:#EEEDFE;border-color:#AFA9EC}
+.phase-tab.active-1{background:#E6F1FB;border-color:#85B7EB}
+.phase-tab.active-2{background:#E1F5EE;border-color:#5DCAA5}
+.phase-tab.active-3{background:#FAEEDA;border-color:#FAC775}
+@media(prefers-color-scheme:dark){
+.phase-tab.active-0{background:#3C3489;border-color:#7F77DD}
+.phase-tab.active-1{background:#0C447C;border-color:#378ADD}
+.phase-tab.active-2{background:#085041;border-color:#1D9E75}
+.phase-tab.active-3{background:#633806;border-color:#BA7517}
+.phase-tab.active-0 .ph-name,.phase-tab.active-1 .ph-name,.phase-tab.active-2 .ph-name,.phase-tab.active-3 .ph-name{color:#fff}
+.phase-tab.active-0 .ph-dur,.phase-tab.active-1 .ph-dur,.phase-tab.active-2 .ph-dur,.phase-tab.active-3 .ph-dur{color:rgba(255,255,255,.7)}
+}
+.ph-num{font-size:11px;color:var(--color-text-tertiary);margin-bottom:2px}
+.ph-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.ph-dur{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.timeline-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-bottom:1.5rem;background:var(--color-background-secondary)}
+.tbar{height:100%;transition:opacity .2s}
+.detail{display:none;animation:fadeIn .3s}
+.detail.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.d-header{margin-bottom:16px}
+.d-title{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.d-sub{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+.d-goal{font-size:14px;color:var(--color-text-secondary);margin-top:8px;padding:10px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);line-height:1.6}
+.work-section{margin-bottom:16px}
+.ws-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.task-card{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:6px;background:var(--color-background-primary)}
+.task-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
+.ti-0{background:#EEEDFE;color:#534AB7}
+.ti-1{background:#E6F1FB;color:#185FA5}
+.ti-2{background:#E1F5EE;color:#0F6E56}
+.ti-3{background:#FAEEDA;color:#854F0B}
+@media(prefers-color-scheme:dark){
+.ti-0{background:#3C3489;color:#CECBF6}
+.ti-1{background:#0C447C;color:#B5D4F4}
+.ti-2{background:#085041;color:#9FE1CB}
+.ti-3{background:#633806;color:#FAC775}
+}
+.task-body{flex:1;min-width:0}
+.task-name{font-size:14px;font-weight:500;color:var(--color-text-primary);line-height:1.4}
+.task-desc{font-size:12px;color:var(--color-text-secondary);margin-top:2px;line-height:1.5}
+.done-badge{font-size:11px;padding:3px 8px;border-radius:var(--border-radius-md);background:var(--color-background-success);color:var(--color-text-success);white-space:nowrap;margin-top:1px}
+.seo-badge{font-size:11px;padding:3px 8px;border-radius:var(--border-radius-md);background:var(--color-background-info);color:var(--color-text-info);white-space:nowrap;margin-top:1px}
+.dep-line{font-size:12px;color:var(--color-text-tertiary);margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:16px}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px}
+.metric-label{font-size:11px;color:var(--color-text-secondary)}
+.metric-val{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-top:2px}
+</style>
+<div class="rm">
+<div class="phases" id="tabs"></div>
+<div class="timeline-bar" id="tbar"></div>
+<div id="details"></div>
+</div>
+<script>
+const P=[
+{id:0,name:"기반 정비",dur:"2~3주",color:["#AFA9EC","#7F77DD"],pct:10,
+goal:"외국인이 고방에 '들어올 수 있게' 만드는 최소 인프라. 이 단계 없이는 다국어를 만들어도 가입·소통이 막혀 이탈합니다.",
+sections:[
+{title:"가입 체계 확장",tasks:[
+{name:"Google 소셜 로그인 추가",desc:"OAuth 2.0 연동. 기존 카카오/네이버/애플에 추가",icon:"🔑"},
+{name:"이메일+비밀번호 직접 가입",desc:"소셜 로그인 없이도 가입 가능한 유니버설 폴백",icon:"✉"},
+{name:"국제 전화번호 입력 지원",desc:"국가코드 선택기(+82, +1, +84 등) + libphonenumber-js 검증",icon:"📱"},
+{name:"한국 휴대폰 본인인증 → 선택사항 전환",desc:"ARC 보유 외국인만 추가 인증 옵션. CI/DI 의존도 최소화",icon:"🔓"}
+]},
+{title:"소통 채널 최소 개방",tasks:[
+{name:"WhatsApp 버튼 추가",desc:"매물 상세 페이지에 wa.me 딥링크 버튼. 호스트 또는 고방 CS 연결",icon:"💬"},
+{name:"전화번호 +82 국제 포맷 병기",desc:"tel: 링크 정규화로 모바일 탭 시 바로 국제전화 가능",icon:"📞"},
+{name:"문자 회신번호 국제번호 허용",desc:"기존 국내번호 제한 해제. 국가코드 포함 번호 입력 가능",icon:"💬"}
+]},
+{title:"SEO 기반 세팅",tasks:[
+{name:"서브디렉토리 라우팅 구조 세팅",desc:"gobang.kr/en/ 경로 구조. 이 시점에서는 빈 껍데기여도 OK",icon:"🌐",seo:true},
+{name:"hreflang 태그 기본 구조 삽입",desc:"ko 기본, en 대체, x-default→ko. <head>에 삽입",icon:"🏷",seo:true},
+{name:"sitemap.xml 다국어 URL 반영",desc:"Google Search Console 제출 준비",icon:"🗺",seo:true}
+]}
+],
+metrics:[{l:"핵심 지표",v:"가입 전환율"},{l:"목표",v:"외국인 가입 가능"},{l:"기간",v:"2~3주"},{l:"의존성",v:"없음 (즉시 착수)"}]
+},
+{id:1,name:"영어 MVP",dur:"4~6주",color:["#85B7EB","#378ADD"],pct:25,
+goal:"'가볍게 다국어를 서비스하는' 첫 단계. 영어 1개 언어로 웹 서비스를 먼저 오픈합니다.",
+sections:[
+{title:"i18n 프레임워크 도입",tasks:[
+{name:"i18n 라이브러리 적용",desc:"UI 텍스트를 하드코딩에서 키-값 리소스 파일(ko.json, en.json)로 분리",icon:"⚙"},
+{name:"서브디렉토리 라우팅 가동",desc:"모든 주요 페이지가 gobang.kr/en/* 경로로 실제 접근 가능",icon:"🔗",seo:true}
+]},
+{title:"번역 범위와 방식",tasks:[
+{name:"UI/메뉴/버튼 전문 번역",desc:"네이티브 검수 적용. 가격·면적·주소 등 구조화 데이터는 번역 제외, 로컬라이제이션만",icon:"✏"},
+{name:"매물 설명 실시간 기계번역",desc:"Papago 또는 DeepL API. '자동 번역됨' 라벨 명시. 핵심 정보는 구조화 분리",icon:"🤖"},
+{name:"통화 전환 표시",desc:"₩/$ 토글. 환율 API 연동으로 매물 가격 USD 환산 표시",icon:"💱"}
+]},
+{title:"언어 감지와 전환 UX",tasks:[
+{name:"Accept-Language 자동 감지",desc:"영어 사용자 → /en/ 자동 리다이렉트. 쿠키에 선택 저장",icon:"🌍"},
+{name:"언어 전환 토글 GNB 배치",desc:"🌐 아이콘 + 드롭다운. 국기 아이콘 미사용 (다중 언어 국가 문제)",icon:"🔄"}
+]},
+{title:"외국인 가이드 콘텐츠",tasks:[
+{name:"한국 주거 기본 가이드 (영문)",desc:"전세/월세, 보증금, 고시원 설명, 필요 서류, 지역별 월세 비교 등 5~10개 문서",icon:"📖",seo:true},
+{name:"SEO 키워드 타겟팅",desc:"'Seoul housing for foreigners', 'goshiwon guide' 등 Google 검색 유입 확보",icon:"🎯",seo:true}
+]}
+],
+metrics:[{l:"핵심 지표",v:"영어 유입률"},{l:"목표",v:"영어 서비스 완결"},{l:"기간",v:"4~6주"},{l:"의존성",v:"Phase 0 완료"}]
+},
+{id:2,name:"다국어 + 소통",dur:"6~8주",color:["#5DCAA5","#1D9E75"],pct:30,
+goal:"영어 MVP 검증 후, 주요 언어를 추가하고 소통 채널을 본격 확장합니다.",
+sections:[
+{title:"주요 언어 추가",tasks:[
+{name:"중국어 간체(zh-CN) 번역 추가",desc:"i18n 리소스 파일 추가. UI 전문 번역 + UGC 기계번역 동일 적용",icon:"🇨🇳"},
+{name:"일본어(ja) 번역 추가",desc:"동일 구조. 서브디렉토리 /ja/ 경로 + hreflang 태그 확장",icon:"🇯🇵",seo:true},
+{name:"기타 언어 기계번역 자동 적용",desc:"베트남어, 태국어 등. 전문 검수 없이 '자동 번역됨' 라벨로 가볍게 제공",icon:"🌐"}
+]},
+{title:"메신저 채널 확장",tasks:[
+{name:"LINE 상담 채널 추가",desc:"일본/대만 사용자 대상. 매물 상세 페이지 메신저 선택에 추가",icon:"💚"},
+{name:"WeChat 상담 채널 추가",desc:"중국 사용자 대상. QR코드 기반 연결",icon:"💚"},
+{name:"메신저 선택 플로팅 버튼",desc:"사용자 언어/지역에 따라 기본 메신저 순서 자동 정렬",icon:"📲"}
+]},
+{title:"인앱 채팅 번역",tasks:[
+{name:"자체 인앱 채팅 도입",desc:"카카오톡 외 자체 채팅 시스템. 호스트-게스트 직접 소통 채널",icon:"💬"},
+{name:"실시간 자동번역 적용",desc:"Papago/DeepL API. 한국어↔영어/중국어/일본어 양방향 자동 번역",icon:"🔄"},
+{name:"부동산 용어 팝업 사전",desc:"전세/월세/보증금 등 한국 부동산 용어 다국어 팝업 해설",icon:"📘"}
+]}
+],
+metrics:[{l:"핵심 지표",v:"비영어권 전환율"},{l:"목표",v:"3개 언어 완전 지원"},{l:"기간",v:"6~8주"},{l:"의존성",v:"Phase 1 검증"}]
+},
+{id:3,name:"외국인 맞춤형",dur:"8~12주",color:["#FAC775","#BA7517"],pct:35,
+goal:"최종 목표: 외국인 이용자 맞춤형 화면과 서비스 구성을 자동으로 제공합니다.",
+sections:[
+{title:"맞춤 홈/검색 화면",tasks:[
+{name:"외국인 감지 시 메인 화면 자동 전환",desc:"외국인 입주 가능 매물 기본 필터 활성화. 지역명 영문 병기 (홍대입구 → Hongdae)",icon:"🏠"},
+{name:"'Foreigner-friendly' 배지",desc:"외국인 입주 확인된 매물 카드에 배지 표시. 호스트 셀프 설정 + 검증",icon:"✅"},
+{name:"통화 환산 자동 표시",desc:"보증금/월세를 사용자 통화(USD/CNY/JPY)로 자동 환산",icon:"💱"}
+]},
+{title:"외국인 전용 필터와 정보",tasks:[
+{name:"외국인 특화 검색 필터",desc:"영어 소통 가능 호스트, 단기 계약, 보증금 없음/소액, ARC 불필요 등",icon:"🔍"},
+{name:"외국인 관점 추가 정보 섹션",desc:"최소 계약기간, 필요 서류, 보증금 반환, 근처 출입국관리사무소",icon:"📋"}
+]},
+{title:"해외 결제 + 앱 확장",tasks:[
+{name:"해외 카드 결제 지원",desc:"VISA/Mastercard + PayPal. 예약금/보증금 온라인 결제",icon:"💳"},
+{name:"앱 다국어 확장",desc:"WebView에 i18n 적용. 앱 푸시 알림 다국어 분기",icon:"📱"},
+{name:"App Store / Play Store ASO",desc:"영어/중국어/일본어 스토어 설명 작성. 앱스토어 검색 최적화",icon:"📦",seo:true},
+{name:"구조화 데이터 + SEO 완성",desc:"Schema.org RentalListing/Apartment. Google Search Console 다국어 모니터링",icon:"📊",seo:true}
+]}
+],
+metrics:[{l:"핵심 지표",v:"외국인 재방문율"},{l:"목표",v:"맞춤형 경험 완결"},{l:"기간",v:"8~12주"},{l:"의존성",v:"Phase 2 완료"}]
+}
+];
+
+let cur=0;
+const $=id=>document.getElementById(id);
+
+function render(){
+let tabsH='';
+P.forEach((p,i)=>{
+tabsH+=`<div class="phase-tab ${i===cur?'active-'+i:''}" onclick="sel(${i})">
+<div class="ph-num">Phase ${p.id}</div>
+<div class="ph-name">${p.name}</div>
+<div class="ph-dur">${p.dur}</div>
+</div>`;
+});
+$('tabs').innerHTML=tabsH;
+
+let barH='';
+P.forEach((p,i)=>{
+barH+=`<div class="tbar" style="width:${p.pct}%;background:${p.color[i===cur?1:0]};opacity:${i===cur?1:.5}"></div>`;
+});
+$('tbar').innerHTML=barH;
+
+let dH='';
+P.forEach((p,i)=>{
+dH+=`<div class="detail ${i===cur?'show':''}" id="d${i}">
+<div class="d-header">
+<div class="d-title">Phase ${p.id}: ${p.name}</div>
+<div class="d-sub">${p.dur} · 전체 중 ${p.pct}%</div>
+<div class="d-goal">${p.goal}</div>
+</div>`;
+p.sections.forEach(s=>{
+dH+=`<div class="work-section"><div class="ws-title">${s.title}</div>`;
+s.tasks.forEach(t=>{
+dH+=`<div class="task-card">
+<div class="task-icon ti-${i}">${t.icon}</div>
+<div class="task-body">
+<div class="task-name">${t.name}</div>
+<div class="task-desc">${t.desc}</div>
+</div>
+${t.seo?'<div class="seo-badge">SEO</div>':''}
+</div>`;
+});
+dH+=`</div>`;
+});
+dH+=`<div class="metrics">`;
+p.metrics.forEach(m=>{
+dH+=`<div class="metric"><div class="metric-label">${m.l}</div><div class="metric-val">${m.v}</div></div>`;
+});
+dH+=`</div>`;
+if(i<3){
+dH+=`<div class="dep-line">→ 완료 후 Phase ${i+1}(${P[i+1].name})로 이행</div>`;
+}
+dH+=`</div>`;
+});
+$('details').innerHTML=dH;
+}
+
+function sel(i){cur=i;render();}
+render();
+</script>
